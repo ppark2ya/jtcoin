@@ -11,18 +11,36 @@ type block struct {
 	prevHash string
 }
 
-// B1
-// 	b1Hash = fn_hash(data + "")
-// B2
-// 	b2Hash = fn_hash(data + b1Hash)
-// B3
-// 	b3Hash = fn_hash(data + b2Hash)
+type blockchain struct {
+	blocks []block
+}
+
+func (b *blockchain) getLastHash() string {
+	if len(b.blocks) > 0 {
+		return b.blocks[len(b.blocks) - 1].hash
+	}
+
+	return ""
+}
+func (b *blockchain) addBlock(data string) {
+	newBlock := block{data: data, hash: "", prevHash: b.getLastHash()}
+	hash := sha256.Sum256([]byte(newBlock.data + newBlock.prevHash))
+	newBlock.hash = fmt.Sprintf("%x", hash) // 16진수. base16
+	b.blocks = append(b.blocks, newBlock)
+}
+
+func (b *blockchain) listBlocks() {
+	for _, block := range b.blocks {
+		fmt.Printf("Data: %s\n", block.data)
+		fmt.Printf("Hash: %s\n", block.hash)
+		fmt.Printf("PrevHash: %s\n", block.prevHash)
+	}
+}
 
 func main() {
-	genesisBlock := block{data: "Genesis Block", hash: "", prevHash: ""}
-	hash := sha256.Sum256([]byte(genesisBlock.data + genesisBlock.prevHash))
-	hexHash := fmt.Sprintf("%x", hash) // 16진수. base16
-	genesisBlock.hash = hexHash
-
-	fmt.Println(genesisBlock)
+	chain := blockchain{}
+	chain.addBlock("Genesis Block")
+	chain.addBlock("Second Block")
+	chain.addBlock("Third Block")
+	chain.listBlocks()
 }
